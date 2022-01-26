@@ -1,62 +1,53 @@
-import { useState } from 'react'
-import { Button } from 'antd'
-import vite from '@/assets/vite.svg'
-import react from '@/assets/react.svg'
-import electron from '@/assets/electron.png'
-import './App.css'
+import { HashRouter, Route, Routes } from 'react-router-dom'
+import { ThemeContextProvider } from './context/theme';
 
-function App() {
-  const [count, setCount] = useState(0)
+import Home from './pages/Home';
+import Monitor from './pages/Monitor';
+import DrawMode from './pages/DrawMode';
 
-  return (
-    <div className="App">
-      <header className="App-header">
-        <div className="logos">
-          <div className="img-box">
-            <img src={electron} style={{ height: '24vw' }} className="App-logo" alt="electron" />
-          </div>
-          <div className="img-box">
-            <img src={vite} style={{ height: '19vw' }} alt="vite" />
-          </div>
-          <div className="img-box">
-            <img src={react} style={{ maxWidth: '100%' }} className="App-logo" alt="logo" />
-          </div>
-        </div>
-        <p>Hello Electron + Vite + React!</p>
-        <p>
-          <Button type="primary" onClick={() => setCount((count) => count + 1)}>
-            count is: {count}
-          </Button>
-        </p>
-        <p>
-          Edit <code>App.tsx</code> and save to test HMR updates.
-        </p>
-        <div>
-          <a
-            className="App-link"
-            href="https://reactjs.org"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Learn React
-          </a>
-          {' | '}
-          <a
-            className="App-link"
-            href="https://vitejs.dev/guide/features.html"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Vite Docs
-          </a>
-          <div className="static-public">
-            Place static files into the <code>src/renderer/public</code> folder
-            <img style={{ width: 90 }} src="./images/node.png" />
-          </div>
-        </div>
-      </header>
-    </div>
-  )
-}
+import { useCallback, useEffect, useMemo, useState } from "react";
+const ipcRenderer = window.ipcRenderer;
+import deepeq from './utils/deepeq';
+import VideoBackground from './components/VideoBackground';
 
-export default App
+
+const App = () => {
+    const [appState, setAppState] = useState({ inputField: ""});
+
+    const setState = ({broadcast, ...arg}) => {
+        if (broadcast) {
+            ipcRenderer.send('setState:broadcast', arg);
+            return true;
+        }
+        ipcRenderer.send('setState', arg);
+        return false;
+    };
+
+    const onSyncHandler = useMemo(() => (_, state) => {
+        if(!deepeq(appState, state,'t')){
+            setAppState({...state})
+            console.log('app state changed!', appState)
+        }
+    }, [appState])
+
+    useEffect(() => {
+        ipcRenderer.on('sync', (event, state) => onSyncHandler(event, state));
+        ipcRenderer.send('sync');
+        return () => { 
+            ipcRenderer.removeAllListeners('sync');
+        };
+    },[onSyncHandler]);
+
+    return <ThemeContextProvider>
+        <HashRouter>
+            <VideoBackground state={appState} setState={setState} persistent/>
+            <Routes>
+                <Route path="/text" element={<Home state={appState} setState={setState}/>} />
+                <Route path="/drawmode" element={<DrawMode state={appState} setState={setState}/>} />
+                <Route path="/monitor" element={<Monitor state={appState} setState={setState}/>} />
+            </Routes>
+        </HashRouter>
+    </ThemeContextProvider>
+};
+
+export default App;

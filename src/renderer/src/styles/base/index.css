@@ -1,0 +1,17 @@
+body{
+    margin: 0px;
+    padding: 0px;
+}
+
+input::placeholder{
+    color: white !important;
+}
+
+.projector{
+    height: 100%;
+    width: 100%;
+}
+
+a{
+    text-decoration: none;
+}

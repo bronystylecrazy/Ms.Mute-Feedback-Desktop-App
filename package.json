@@ -13,14 +13,26 @@
     "node": ">=14.17.0"
   },
   "dependencies": {
-    "electron-store": "^8.0.1"
+    "@electron/remote": "^1.0.2",
+    "@emotion/react": "^11.7.1",
+    "@emotion/styled": "^11.6.0",
+    "@mui/icons-material": "^5.3.1",
+    "@mui/lab": "^5.0.0-alpha.66",
+    "@mui/material": "^5.3.0",
+    "dom-to-image": "^2.6.0",
+    "electron": "^11.2.1",
+    "electron-is-dev": "^2.0.0",
+    "electron-store": "^8.0.1",
+    "fabric": "^4.6.0",
+    "fabricjs-react": "^1.0.8",
+    "html-to-image": "^1.9.0",
+    "material-ui-color": "^1.2.0",
+    "react-router-dom": "^6.2.1"
   },
   "devDependencies": {
     "@types/react": "^17.0.33",
     "@types/react-dom": "^17.0.10",
     "@vitejs/plugin-react": "^1.0.7",
-    "antd": "^4.16.13",
-    "electron": "^15.3.0",
     "electron-builder": "^22.13.1",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
