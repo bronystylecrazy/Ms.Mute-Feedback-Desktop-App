@@ -36,6 +36,7 @@ const Monitor = ({state, setState}) => {
         window.ipcRenderer.on('save:message', (event, args) => {
             window.ipcRenderer.send('save:message-result', args);
         });
+        
         if(editor){
             // editor.canvas.isDrawingMode = true;
             // editor.canvas.freeDrawingBrush.width = 5;
@@ -72,7 +73,6 @@ const Monitor = ({state, setState}) => {
 
         }
         window.ipcRenderer.on('sync:canvas', (event, json) => {
-            console.log('syning up!', json)
             if(editor){
                 editor.canvas.clear();
                 editor.canvas.loadFromJSON(json, function() {
@@ -84,15 +84,13 @@ const Monitor = ({state, setState}) => {
 
                     var alltogetherObj = new fabric.Group(objs);
 
-                    
-
                     editor.canvas.add(alltogetherObj);
                     alltogetherObj.center();
                     alltogetherObj.setCoord();
                     editor.canvas.renderAll(); 
 
                  },function(o,object){
-                    console.log(o,object)
+                    
                  });
             }
         })
@@ -105,7 +103,7 @@ const Monitor = ({state, setState}) => {
         }
     },[editor]);
 
-    return <Box onClick={() => editor?.addCircle()}>
+    return <Box>
         <TopLeftLogo state={state} setState={setState}/>
         <Box sx={{position: 'fixed', width: '100vw', borderRadius: '2.5rem', top: '0', left: '0', bottom: '0',right: '0',}}>
             <FabricJSCanvas onReady={onReady} className="projector"/>

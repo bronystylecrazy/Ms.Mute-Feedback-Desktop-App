@@ -1,5 +1,7 @@
 import fs from 'fs'
-import { contextBridge, ipcRenderer } from 'electron'
+import path from 'path'
+import os from 'os'
+import { contextBridge, ipcRenderer, remote } from 'electron'
 import { domReady } from './utils'
 import useLoading from './loading'
 
@@ -14,6 +16,10 @@ const { appendLoading, removeLoading } = useLoading()
 
 // --------- Expose some API to Renderer process. ---------
 contextBridge.exposeInMainWorld('fs', fs)
+contextBridge.exposeInMainWorld('path', path)
+contextBridge.exposeInMainWorld('os', os)
+contextBridge.exposeInMainWorld('remote', remote)
+contextBridge.exposeInMainWorld('app', remote.app)
 contextBridge.exposeInMainWorld('removeLoading', removeLoading)
 contextBridge.exposeInMainWorld('ipcRenderer', withPrototype(ipcRenderer))
 

@@ -7,9 +7,10 @@ import InputBox from "../components/InputBox";
 import TopLeftLogo from "../components/logos/TopLeftLogo";
 import BottomRightLogo from "../components/logos/BottomRightLogo";
 import TopRight from "../components/logos/TopRight";
+import { useNavigate } from 'react-router-dom';
 
 const Home = ({ state, setState }) => {
-
+    const navigate = useNavigate();
     const ButtonGroup = { 
         transform: 'translate(-50%,-50%)',
         position: 'fixed', bottom: 0, left: '50%',
@@ -24,7 +25,8 @@ const Home = ({ state, setState }) => {
         <TopRight  to="/drawmode"/>
 
         <Grid container spacing={5} sx={ButtonGroup}>
-            <CollectionButton style={{width: "20vw", marginRight: "2vw"}}>
+
+            <CollectionButton style={{width: "20vw", marginRight: "2vw"}} onClick={() => navigate('/image_collection')}>
                 <LibraryBooksOutlined sx={{fontSize: '2.5vw',marginRight: '0.5vw'}}/>คลังข้อความ
             </CollectionButton>
             <CollectionButton style={{width: "20vw"}}><CollectionsOutlined sx={{fontSize: '2.5vw', marginRight: '0.5vw'}}/> คลังรูปภาพ</CollectionButton>

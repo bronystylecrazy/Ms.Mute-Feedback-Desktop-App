@@ -5,6 +5,7 @@
   "author": "草鞋没号 <308487730@qq.com>",
   "license": "MIT",
   "main": "dist/main/index.cjs",
+  "asar": false,
   "scripts": {
     "dev": "node scripts/watch.mjs",
     "build": "node scripts/build.mjs && electron-builder"
@@ -20,22 +21,26 @@
     "@mui/lab": "^5.0.0-alpha.66",
     "@mui/material": "^5.3.0",
     "dom-to-image": "^2.6.0",
-    "electron": "^11.2.1",
     "electron-is-dev": "^2.0.0",
     "electron-store": "^8.0.1",
     "fabric": "^4.6.0",
     "fabricjs-react": "^1.0.8",
+    "glob": "^7.2.0",
     "html-to-image": "^1.9.0",
+    "image-data-uri": "^2.0.1",
     "material-ui-color": "^1.2.0",
-    "react-router-dom": "^6.2.1"
+    "react-router-dom": "^6.2.1",
+    "sweetalert2": "^11.3.10"
   },
   "devDependencies": {
     "@types/react": "^17.0.33",
     "@types/react-dom": "^17.0.10",
     "@vitejs/plugin-react": "^1.0.7",
+    "electron": "^11.2.1",
     "electron-builder": "^22.13.1",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
+    "sass": "^1.49.0",
     "typescript": "^4.4.4",
     "vite": "^2.6.13",
     "vite-plugin-resolve": "^1.4.0"

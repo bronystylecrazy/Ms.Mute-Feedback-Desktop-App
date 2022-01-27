@@ -7,11 +7,14 @@ import App from './App'
 
 console.log('fs', window.fs)
 console.log('ipcRenderer', window.ipcRenderer)
-console.log(window.removeLoading)
+
 ReactDOM.render(
   <React.StrictMode>
     <App />
   </React.StrictMode>,
   document.getElementById('root'),
-  () => document.head.removeChild(document.getElementById('app-loading-style'))
+  () => {
+    const loader = document.getElementById('app-loading-style');
+    if(loader) document.head.removeChild(loader)
+  }
 )

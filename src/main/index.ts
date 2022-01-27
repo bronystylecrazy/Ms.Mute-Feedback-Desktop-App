@@ -1,6 +1,8 @@
 import os from 'os'
 import { join } from 'path'
 import { app, BrowserWindow, ipcMain } from 'electron'
+import glob from 'glob';
+import path from 'path';
 
 import './samples/electron-store'
 import windowConf from './conf/window'
@@ -34,7 +36,10 @@ async function createWindow() {
   const win = new BrowserWindow({
     webPreferences: {
       contextIsolation: true,
-      preload: join(__dirname, '../preload/index.cjs')
+      preload: join(__dirname, '../preload/index.cjs'),
+      enableRemoteModule: true,
+      nodeIntegration: true,
+      webSecurity: false
     },
     ...windowConf
   })
@@ -62,6 +67,29 @@ async function createWindow() {
     event.reply('sync',appState);
   });
 
+  /** LOAD PROJECT */
+  ipcMain.on('load:project', (event, fileName) => {
+    const json = JSON.parse(fs.readFileSync(`${storagePath}/${fileName}/manifest.json`,'utf-8'))
+    const project = `${storagePath}/${fileName}/${json?.entry?.project || "project.json"}`;
+    if(fs.existsSync(project)){
+      const projectContent = JSON.parse(fs.readFileSync(project,'utf-8'));
+      event.reply('load:project',projectContent)
+    }
+  });
+
+  const storagePath = path.join(app.getPath('userData'), '/storage');
+  ipcMain.on('view:image', (event) => {
+    glob(storagePath + '/**/manifest.json', (err, files) => {
+      if(err) return;
+      const manifests = [];
+      for(var file of files){
+        const json = JSON.parse(fs.readFileSync(file,'utf8'));
+        manifests.push({...json, author: json?.author || 'Anonymous' , project: `${storagePath}/${json.name}/${json?.entry?.project}`, preview: `${storagePath}/${json.name}/${json?.entry?.png}`});
+      }
+      broadcast([win, monitor], 'view:image:updated', JSON.stringify(manifests));
+    });
+  });
+
   ipcMain.on('sync:canvas', (event,json) => {
     console.log('syncing up with these two!')
     broadcast([monitor],'sync:canvas',json);
@@ -87,11 +115,26 @@ async function createWindow() {
   ipcMain.on('save:message', (event, arg) => {
     broadcast([monitor], 'save:message', arg);
   })
+  
   ipcMain.on('save:message-result', (event, arg) => {
     // console.log(arg)
     dataURLtoFile(arg, 'message.png')
     broadcast([win], 'save:message-result', arg);
   })
+
+  /** SAVE IMAGES */
+  ipcMain.on('save:image', (event, { dataURL, outPath}) => {
+    try{
+      var buffer = Buffer.from(dataURL.substring(`data:image/png;base64,`.length), 'base64');
+      fs.writeFileSync(outPath, buffer);
+      event.reply('save:image', true);
+    }catch(e){
+      event.reply('save:image', {
+        success: false,
+        message: (e as Error).message
+      });
+    }
+  });
 
   /** OPEN ANOTHER WINDOW */
   ipcMain.on("monitor:open", async (event, arg) => {
@@ -99,15 +142,21 @@ async function createWindow() {
       monitor = new BrowserWindow({
         webPreferences: {
           contextIsolation: true,
-          preload: join(__dirname, '../preload/index.cjs')
+          preload: join(__dirname, '../preload/index.cjs'),
+          enableRemoteModule: true,
+          nodeIntegration: true,
+          webSecurity: false
         },
         ...windowConf
       })
-      const pkg = await import('../../package.json')
-      const url = `http://${pkg.env.HOST || '127.0.0.1'}:${pkg.env.PORT}${route.monitor}`
-  
-      monitor.loadURL(url)
-
+      if (app.isPackaged) {
+        monitor.loadFile(join(__dirname, `../renderer/index.html`))
+      }else{
+        const pkg = await import('../../package.json')
+        const url = `http://${pkg.env.HOST || '127.0.0.1'}:${pkg.env.PORT}${route.monitor}`
+    
+        monitor.loadURL(url)
+      }
       monitor.on('ready-to-show', () => monitor.show());
       event.returnValue = {
         status: "success",
@@ -123,7 +172,7 @@ async function createWindow() {
   })
 
   if (app.isPackaged) {
-    win.loadFile(join(__dirname, '../renderer/index.html'))
+    win.loadFile(join(__dirname, `../renderer/index.html`))
   } else {
     const pkg = await import('../../package.json')
     const url = `http://${pkg.env.HOST || '127.0.0.1'}:${pkg.env.PORT}${route.home}`
