@@ -8,6 +8,7 @@ import TopLeftLogo from "../components/logos/TopLeftLogo";
 import BottomRightLogo from "../components/logos/BottomRightLogo";
 import TopRight from "../components/logos/TopRight";
 import { useNavigate } from 'react-router-dom';
+import { nanoid } from 'nanoid';
 
 const Home = ({ state, setState }) => {
     const navigate = useNavigate();
@@ -22,14 +23,14 @@ const Home = ({ state, setState }) => {
         <InputBox state={state} setState={setState}/>
         <TopLeftLogo state={state} setState={setState}/>
         <BottomRightLogo/>
-        <TopRight  to="/drawmode"/>
+        <TopRight  to={`/drawmode?project=Untitled-${nanoid(6)}`}/>
 
         <Grid container spacing={5} sx={ButtonGroup}>
 
-            <CollectionButton style={{width: "20vw", marginRight: "2vw"}} onClick={() => navigate('/image_collection')}>
+            <CollectionButton onClick={() => navigate('/text_collection')} style={{width: "20vw", marginRight: "2vw"}} >
                 <LibraryBooksOutlined sx={{fontSize: '2.5vw',marginRight: '0.5vw'}}/>คลังข้อความ
             </CollectionButton>
-            <CollectionButton style={{width: "20vw"}}><CollectionsOutlined sx={{fontSize: '2.5vw', marginRight: '0.5vw'}}/> คลังรูปภาพ</CollectionButton>
+            <CollectionButton onClick={() => navigate('/image_collection')} style={{width: "20vw"}}><CollectionsOutlined sx={{fontSize: '2.5vw', marginRight: '0.5vw'}}/> คลังรูปภาพ</CollectionButton>
         </Grid>
     </Box>
 };

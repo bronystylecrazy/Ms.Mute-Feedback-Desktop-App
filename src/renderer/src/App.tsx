@@ -5,7 +5,7 @@ import Home from './pages/Home';
 import Monitor from './pages/Monitor';
 import DrawMode from './pages/DrawMode';
 import Collection from './pages/Collection';
-
+import TextCollection from './pages/TextCollection';
 import { useCallback, useEffect, useMemo, useState } from "react";
 const ipcRenderer = window.ipcRenderer;
 import deepeq from './utils/deepeq';
@@ -14,7 +14,7 @@ import { Snackbar } from '@mui/material';
 
 
 const App = () => {
-    const [appState, setAppState] = useState({ inputField: ""});
+    const [appState, setAppState] = useState({ inputField: "", color: '#fff'});
 
     const setState = ({broadcast, ...arg}) => {
         if (broadcast) {
@@ -46,6 +46,7 @@ const App = () => {
             <Routes>
                 <Route path="/text" element={<Home state={appState} setState={setState}/>} />
                 <Route path="/image_collection" element={<Collection state={appState} setState={setState}/>} />
+                <Route path="/text_collection" element={<TextCollection state={appState} setState={setState}/>} />
                 <Route path="/drawmode" element={<DrawMode state={appState} setState={setState}/>} />
                 <Route path="/monitor" element={<Monitor state={appState} setState={setState}/>} />
                 <Route

@@ -13,19 +13,19 @@ import ArrowUpwardRoundedIcon from '@mui/icons-material/ArrowUpwardRounded';
 
 const sortAlg = (left, right, sortBy) => {
     if(sortBy === 0){
-        return left.name.localeCompare(right.name);
+        return left.text.localeCompare(right.text);
     }
     if(sortBy === 1){
-        return left.updatedAt - right.updatedAt;
+        return left.createdAt - right.createdAt;
     }
     if(sortBy === 2){
         return left.size - right.size;
     }
 
-    return left.updatedAt - right.updatedAt;
+    return left.createdAt - right.createdAt;
 };
 
-const Collection = ({state, setState}) => {
+const TextCollection = ({state, setState}) => {
     const {search} = useLocation();
     const [searchText, setSearchText] = useState("");
     const [images, setImages] = useState([])
@@ -35,7 +35,7 @@ const Collection = ({state, setState}) => {
     
 
     const filteredItems = useMemo(() => { 
-        const filtered = images.filter(item => item.name
+        const filtered = images.filter(item => item.text
             .toLowerCase()
             .includes(searchText.trim().toLowerCase()))
             .sort((a,b) => sortAlg(a,b,sortBy)
@@ -48,17 +48,17 @@ const Collection = ({state, setState}) => {
             setImages(JSON.parse(data).map(item => ({ id: nanoid() , ...item,  preview: `${item.preview}?${Date.now()}` })))
             console.log(JSON.parse(data).map(item => ({ id: nanoid(), ...item })))
         };
-        window.ipcRenderer.send('view:image');
-        window.ipcRenderer.on('view:image:updated', setData);
+        window.ipcRenderer.send('view:text');
+        window.ipcRenderer.on('view:text:updated', setData);
 
         return () => {
-            window.ipcRenderer.removeAllListeners('view:image:updated')
+            window.ipcRenderer.removeAllListeners('view:text:updated')
         };
     },[search]);
 
     const downloadAs = () => {
         console.log('Opening... directory')
-        window.shell.openPath(window.path.join(window.app.getPath('userData'), './storage/'))
+        window.shell.openPath(window.path.join(window.app.getPath('userData'), './texts/'))
     };
 
     return <Box>
@@ -68,7 +68,7 @@ const Collection = ({state, setState}) => {
         <Container sx={{display:'flex',flexDirection: 'column', justifyContent: 'flex-start',boxShadow: 17,backdropFilter: `blur(16px) saturate(180%)`,padding: '2rem',position: 'fixed', left: '50%',transform: `translateX(-50%)`,borderRadius: '1rem 1rem 0 0', top: '10rem', bottom: '0',border: '1px solid transparent', background: alpha('#fff',.08)}}>
             <Box md={12} sx={{display: 'flex'}} justifyContent="space-between">
                 <Box>
-                    <Link to={`/drawmode?prev=image_collection&project=Untitled-${nanoid(6)}`}><Button variant="outlined"><Add sx={{marginRight: '.75rem'}} />สร้างใหม่</Button></Link>
+                    <Link to={`/`}><Button variant="outlined"><Add sx={{marginRight: '.75rem'}} />สร้างใหม่</Button></Link>
                     <Button variant="outlined" sx={{marginLeft: '1rem'}} onClick={() => downloadAs()}><SettingsSystemDaydreamIcon sx={{marginRight: '.75rem'}} />ดาวน์โหลด</Button>
                 </Box>
                 <Box sx={{display: 'flex'}}>
@@ -102,10 +102,10 @@ const Collection = ({state, setState}) => {
                 </Box>
                 </Box>
             </Box>
-            <Box className="project-viewer" mt={5}  sx={{ overflow: 'auto'}}>
+            <Box className="project-viewer" mt={5}  sx={{ overflow: 'auto', flexGrow: 1}}>
             {
             filteredItems.length > 0 ? 
-                (<Grid container spacing={5} md={12}>
+                (<Grid container spacing={5} md={12} sx={{width: '100%',flexGrow: 1}}>
                     {filteredItems.map((image,index) => <Grid key={image.id} item xs={12} sm={6} md={4}>
                         <Link to={`/drawmode?project=${image.name}&prev=image_collection`}>
                             <Box onMouseEnter={() => setHover(index)} onMouseLeave={() => setHover(-1)} sx={{boxShadow: 10,transition: 'all 0.3s ease-in-out',overflow:'hidden',border: `2px solid ${hover === index ? 'white' : 'rgba(0,0,0,.1)'}`,width: '100%', position: 'relative', paddingTop: '56.25%', background: alpha("#000000",.2), borderRadius: '1rem'}}>
@@ -127,7 +127,7 @@ const Collection = ({state, setState}) => {
                                     }}
                                 />
                                 <Box sx={{position: 'absolute', bottom: '.5rem', left: '1.5rem', color: 'white', fontWeight: '500'}}>
-                                    { image.name } <div style={{color: 'white',fontWeight: '300'}}>by {image.author } <span style={{opacity: .7}}>• { (image.size*1024).toFixed(2) }KB</span></div>
+                                    { image.text } <div style={{color: 'white',fontWeight: '300'}}>by {image.author } <span style={{opacity: .7}}>• { (image.size*1024).toFixed(2) }KB</span></div>
                                 </Box>
                             </Box>
                         </Link>
@@ -152,4 +152,4 @@ const Collection = ({state, setState}) => {
     </Box>
 };
 
-export default Collection;
+export default TextCollection;

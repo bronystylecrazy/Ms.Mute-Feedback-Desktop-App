@@ -1,17 +1,54 @@
-body{
+body {
     margin: 0px;
     padding: 0px;
 }
 
-input::placeholder{
+input::placeholder {
     color: white !important;
 }
 
-.projector{
+input {
+    text-decoration: none !important;
+}
+
+.projector {
     height: 100%;
     width: 100%;
 }
 
-a{
+a {
     text-decoration: none;
+}
+
+::selection {
+    background: #081c3500;
+}
+
+input {
+    user-select: none;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+}
+
+/* width */
+.project-viewer::-webkit-scrollbar {
+    width: 10px;
+}
+
+/* Track */
+.project-viewer::-webkit-scrollbar-track {
+    background: #00000032;
+    border-radius: .5rem;
+}
+
+/* Handle */
+.project-viewer::-webkit-scrollbar-thumb {
+    background: #00000032;
+    border-radius: .5rem;
+}
+
+/* Handle on hover */
+.project-viewer::-webkit-scrollbar-thumb:hover {
+    background: #0000005e;
 }

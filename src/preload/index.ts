@@ -1,7 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 import os from 'os'
-import { contextBridge, ipcRenderer, remote } from 'electron'
+import { contextBridge, ipcRenderer, remote, shell } from 'electron'
 import { domReady } from './utils'
 import useLoading from './loading'
 
@@ -20,6 +20,7 @@ contextBridge.exposeInMainWorld('path', path)
 contextBridge.exposeInMainWorld('os', os)
 contextBridge.exposeInMainWorld('remote', remote)
 contextBridge.exposeInMainWorld('app', remote.app)
+contextBridge.exposeInMainWorld('shell', shell)
 contextBridge.exposeInMainWorld('removeLoading', removeLoading)
 contextBridge.exposeInMainWorld('ipcRenderer', withPrototype(ipcRenderer))
 

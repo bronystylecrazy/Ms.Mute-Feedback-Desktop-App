@@ -20,6 +20,7 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import { ipcRenderer } from "electron/renderer";
+import ButtomLeft from "@/components/logos/BottomLeft";
 
 // fabric.Object.prototype.exportPNG = function() {
 // 	function trimCanvas(canvas)
@@ -124,7 +125,7 @@ const DrawMode = ({ state, setState }) => {
     setOpen(false);
     };
 
-    const saveWithBoundary = (outPath) => {
+    const saveWithBoundary = (outDir, schema) => {
         console.log('cutting...')
         const group = new fabric.Group();
         const canvas = editor.canvas;
@@ -136,14 +137,17 @@ const DrawMode = ({ state, setState }) => {
             top,
             width} = group.getBoundingRect();
         const bounding = new fabric.Rect({height: height + intensity*2, left: left - intensity, top: top - intensity, width: width + intensity*2, fill: "#fff0"});
-            group.addWithUpdate(bounding)
-            window.ipcRenderer.send('save:image', {
-                dataURL: group.toDataURL({
-                    format: 'png',
-                    quality: 0.8
-                }),
-                outPath
-            });
+        group.addWithUpdate(bounding)
+        console.log('saving as a svg..')
+        window.fs.writeFileSync(`${outDir}/${schema.entry.vector}`,editor.canvas.toSVG());
+        window.ipcRenderer.send('save:image', {
+            dataURL: group.toDataURL({
+                format: 'png',
+                quality: 0.8
+            }),
+            outPath: `${outDir}/${schema.entry.png}`
+        });
+            
 
         canvas.clear().renderAll();
         canvas.add(group);
@@ -157,6 +161,10 @@ const DrawMode = ({ state, setState }) => {
 
         canvas.renderAll();
         console.log('this is a group! ')
+        return {
+                    width,
+                    height
+        };
     };
 
     const save = () => {
@@ -171,7 +179,12 @@ const DrawMode = ({ state, setState }) => {
                 },
                 createdAt: createAt,
                 updatedAt: createAt,
-                author: ''
+                author: '',
+                meta: {
+                    width: 0,
+                    height: 0,
+                    ratio: 0
+                }
             };
             const storageDir = window.path.join(app.getPath('userData'),`./storage`);
             if(!window.fs.existsSync(storageDir)) window.fs.mkdirSync(storageDir)
@@ -179,25 +192,24 @@ const DrawMode = ({ state, setState }) => {
             if(!window.fs.existsSync(outDir)) window.fs.mkdirSync(outDir);
             console.log('cutting..')
             console.log('saving json project..')
+            
             window.fs.writeFileSync(`${outDir}/${schema.entry.project}`,JSON.stringify(editor.canvas));
-            console.log('saving as a svg..')
-            window.fs.writeFileSync(`${outDir}/${schema.entry.vector}`,editor.canvas.toSVG());
             console.log('saving as a png..')
-            saveWithBoundary(`${outDir}/${schema.entry.png}`);
+            const {
+                width,
+                height
+            } = saveWithBoundary(outDir, schema);
            
+            schema.meta = {width, height, ratio: (width/height)};
 
             if(window.fs.existsSync(window.path.join(outDir,'./manifest.json'))){
                 schema = JSON.parse(window.fs.readFileSync(window.path.join(outDir,'./manifest.json'),'utf-8'));
-                schema.updatedAt = Date.now();
             }
+            
+            schema.updatedAt = Date.now();
+            schema.meta = {width, height, ratio: (width/height)};
 
             window.fs.writeFileSync(`${outDir}/manifest.json`,JSON.stringify(schema));
-            // document.getElementById('fabric-canvas').toBlob(function(blob){
-            //     window.ipcRenderer.send('save:image', {
-            //         dataURL: blob,
-            //         outPath: `${outDir}/drawing.png`
-            //     });
-            // })
            
             console.log('saved success!', outDir)
             handleClose();
@@ -242,12 +254,14 @@ const DrawMode = ({ state, setState }) => {
         }
         let loadSuccess = false;
         window.ipcRenderer.on('load:project', (args, json) => {
-            console.log('loading project')
-            if(editor){
+            
+            console.log('loading project',query.get('prev'))
+            if(editor && json){
                 try{
                     editor.canvas.clear();
                     editor.canvas.loadFromJSON(json, function() {
                         editor.canvas.renderAll(); 
+                        // window.ipcRenderer.send('sync:canvas',JSON.stringify(editor.canvas.toJSON()));
                         loadSuccess = true;
                      });
                 }catch(e){
@@ -296,10 +310,11 @@ const DrawMode = ({ state, setState }) => {
 
     const ButtonGroup = { 
         borderRadius: '1rem',
-        border: '2px solid #fff',
+        border: '1px solid #ffffff1b',
         width: 'auto',
         padding: '.5rem',
-        background: '#ffffff12',
+        background: '#1d1d1d3b',
+        backdropFilter: `blur(16px) saturate(180%)`
     };
 
     const popupPenSetting = () => {
@@ -313,6 +328,7 @@ const DrawMode = ({ state, setState }) => {
     };
 
     return <Box>
+        <ButtomLeft buttonTitle="ย้อนกลับ" to={`/${query.get('prev')}`}/>
         <Dialog open={open} onClose={handleClose}>
         <DialogTitle>บันทึกรูปภาพ</DialogTitle>
         <DialogContent>
@@ -352,33 +368,33 @@ const DrawMode = ({ state, setState }) => {
                     <Typography component="div" mt={1}><b style={{fontWeight: 500}}>{titles[target]}</b></Typography>
                 </Grid>)} */}
                 <Grid item sx={{position: 'relative'}}>
-                    <Stack sx={{transition: 'opacity .25s ease-in-out, transform .25s ease-in-out',opacity: showPenSetting ? 1 : 0,textAlign: 'left',padding: '2rem',width: '20rem', color: '#323232',background: 'white', borderRadius: '1rem', position: 'absolute', top: 0, transform: `translateX(-40%) translateY(calc(-${showPenSetting ? 100 : 0}% - 1.5rem))`}}>
-                        <Typography variant="subtitle" fontWeight="500" sx={{color: alpha(`#323232`,0.9), paddingBottom: '.25rem'}}>สีข้างใน</Typography>
+                    <Box style={{transition: 'opacity .25s ease-in-out, transform .25s ease-in-out',opacity: showPenSetting ? 1 : 0,textAlign: 'left',padding: '2rem',width: '20rem', color: '#ffffff',backgroundColor: '#161627a5', borderRadius: '1rem', position: 'absolute', top: 0, transform: `translateX(-40%) translateY(calc(-${showPenSetting ? 100 : 0}% - 1.5rem))`, backdropFilter: `blur(16px) saturate(180%)`}}>
+                        <Typography variant="subtitle" fontWeight="500" sx={{color: alpha(`#fff`,0.9), paddingBottom: '.25rem'}}>สีข้างใน</Typography>
                         <Grid container gap={2} sx={{paddingBottom: '2rem'}} justifyContent="center">
                             { colors.map((color,index) => <Grid item md={2} key={index}>
-                                <IconButton size="small" onClick={() => setSelectedColor(color)} variant="contained" sx={{ border: `4px solid ${selectedColor === color ? 'black' : 'transparent'}`,boxShadow: 15, background: color, color: color, '&:hover': { background: color}}}>
+                                <IconButton size="small" onClick={() => setSelectedColor(color)} variant="contained" sx={{ border: `4px solid ${selectedColor === color ? '#fff' : 'transparent'}`,boxShadow: 15, background: color, color: color, '&:hover': { background: color}}}>
                                     <Edit/>
                                 </IconButton>
                             </Grid>)}
                         </Grid>
-                        <Typography variant="subtitle" fontWeight="500" sx={{color: alpha(`#323232`,0.9), paddingBottom: '.25rem'}}>สีเรืองแสง</Typography>
+                        <Typography variant="subtitle" fontWeight="500" sx={{color: alpha(`#fff`,0.9), paddingBottom: '.25rem'}}>สีเรืองแสง</Typography>
                         <Grid container gap={2} sx={{paddingBottom: '2rem'}} justifyContent="center">
                             { glowColors.map((color,index) => <Grid item md={2} key={index}>
-                                <IconButton size="small" onClick={() => setGlowColor(color)} variant="contained" sx={{ border: `4px solid ${glowColor === color ? 'black' : 'transparent'}`,boxShadow: 15, background: color, color: color, '&:hover': { background: color}}}>
+                                <IconButton size="small" onClick={() => setGlowColor(color)} variant="contained" sx={{ border: `4px solid ${glowColor === color ? '#fff' : 'transparent'}`,boxShadow: 15, background: color, color: color, '&:hover': { background: color}}}>
                                     <Edit/>
                                 </IconButton>
                             </Grid>)}
                         </Grid>
-                        <Typography variant="subtitle" fontWeight="500" sx={{width: '100%',color: alpha(`#323232`,0.9), paddingBottom: '.25rem'}}>ตั้งค่าปากกา</Typography>
+                        <Typography variant="subtitle" fontWeight="500" sx={{width: '100%',color: alpha(`#fff`,0.9), paddingBottom: '.25rem'}}>ตั้งค่าปากกา</Typography>
                         <Grid container spacing={5}>
                             <Grid item xs={12} md={6}>
-                                <Box sx={{width: '100%',height: '100%', position: 'relative', background: alpha(`#000`,.9), borderRadius: '1rem'}}>
+                                <Box sx={{width: '100%',height: '100%', position: 'relative', background: alpha(`#fff`,.9), borderRadius: '1rem'}}>
                                     {/* <Avatar sx={{position: 'absolute', width: '24', height: '24'}}/> */}
                                     <Box sx={{ borderRadius: '100%', boxShadow: `0px 0px ${intensity}px 0px rgba(255,255,255)`, transition: 'all .25s ease-in-out', background: selectedColor, width: `${width}px`, height:`${width}px` , position: 'absolute', top: '50%',left: '50%', transform: 'translate(-50%,-50%)'}}/>
                                 </Box>
                             </Grid>
                             <Grid item xs={12} md={6} sx={{ height: '100%'}}>
-                                <Typography variant="subtitle" component="div" fontWeight="500" sx={{color: alpha(`#323232`,0.9),}}>ขนาด(px)</Typography>
+                                <Typography variant="subtitle" component="div" fontWeight="500" sx={{color: alpha(`#fff`,0.9),}}>ขนาด(px)</Typography>
                                 <Slider
                                     sx={{width: '100%'}}
                                     color="success"
@@ -391,7 +407,7 @@ const DrawMode = ({ state, setState }) => {
                                     valueLabelDisplay="auto"
                                     // marks={marks}
                                 />
-                                 <Typography variant="subtitle" component="div" fontWeight="500" sx={{color: alpha(`#323232`,0.9),}}>ความเรืองแสง</Typography>
+                                 <Typography variant="subtitle" component="div" fontWeight="500" sx={{color: alpha(`#fff`,0.9),}}>ความเรืองแสง</Typography>
                                  <Slider
                                     sx={{width: '100%'}}
                                     color="warning"
@@ -406,7 +422,7 @@ const DrawMode = ({ state, setState }) => {
                                 />
                             </Grid>
                         </Grid>
-                    </Stack>
+                    </Box>
                     <Button sx={{
                             background: mode === 'pen' ?  `rgba(255,255,255,.4)` : "rgba(255,255,255,.3)",
                             "&:hover": {

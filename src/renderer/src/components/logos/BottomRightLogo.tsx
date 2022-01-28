@@ -10,7 +10,7 @@ const BottomRightLogo = () => {
         height: '6vw',
         marginLeft: '.5vw'
     };
-    return <Box sx={{ position:"fixed", right: 0, bottom: 0}}>
+    return <Box sx={{ position:"fixed", right: 0, bottom: 0, pointerEvents: 'none'}}>
         { logos.map((logo, index) => <img alt={logo} src={logo} style={logoStyle} key={index} />) }
     </Box>;
 };

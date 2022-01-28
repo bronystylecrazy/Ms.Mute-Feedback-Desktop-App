@@ -30,7 +30,8 @@ let win: BrowserWindow | null = null
 async function createWindow() {
   let appState = {
     inputField: "Fuck you float",
-    t: 360
+    t: 360,
+    color: '#fff'
   };
   /** Window and monitor windows. */
   const win = new BrowserWindow({
@@ -69,24 +70,49 @@ async function createWindow() {
 
   /** LOAD PROJECT */
   ipcMain.on('load:project', (event, fileName) => {
-    const json = JSON.parse(fs.readFileSync(`${storagePath}/${fileName}/manifest.json`,'utf-8'))
-    const project = `${storagePath}/${fileName}/${json?.entry?.project || "project.json"}`;
-    if(fs.existsSync(project)){
-      const projectContent = JSON.parse(fs.readFileSync(project,'utf-8'));
-      event.reply('load:project',projectContent)
+    if(fs.existsSync(`${storagePath}/${fileName}/manifest.json`)){
+      const json = JSON.parse(fs.readFileSync(`${storagePath}/${fileName}/manifest.json`,'utf-8'))
+      const project = `${storagePath}/${fileName}/${json?.entry?.project || "project.json"}`;
+      if(fs.existsSync(project)){
+        const projectContent = JSON.parse(fs.readFileSync(project,'utf-8'));
+        event.reply('load:project',projectContent)
+      }
+    }else{
+      event.reply('load:project',false)
     }
   });
 
   const storagePath = path.join(app.getPath('userData'), '/storage');
+  const textPath = path.join(app.getPath('userData'), '/texts');
   ipcMain.on('view:image', (event) => {
     glob(storagePath + '/**/manifest.json', (err, files) => {
       if(err) return;
       const manifests = [];
       for(var file of files){
         const json = JSON.parse(fs.readFileSync(file,'utf8'));
-        manifests.push({...json, author: json?.author || 'Anonymous' , project: `${storagePath}/${json.name}/${json?.entry?.project}`, preview: `${storagePath}/${json.name}/${json?.entry?.png}`});
+        const stats = fs.statSync(`${storagePath}/${json.name}/${json?.entry?.png}`);
+        var fileSizeInBytes = stats.size;
+      // Convert the file size to megabytes (optional)
+      var fileSizeInMegabytes = fileSizeInBytes / (1024*1024);
+        manifests.push({...json, author: json?.author || 'Anonymous' , size: fileSizeInMegabytes, project: `${storagePath}/${json.name}/${json?.entry?.project}`, preview: `${storagePath}/${json.name}/${json?.entry?.png}`});
       }
       broadcast([win, monitor], 'view:image:updated', JSON.stringify(manifests));
+    });
+  });
+
+  ipcMain.on('view:text', (event) => {
+    glob(textPath + '/**/manifest.json', (err, files) => {
+      if(err) return;
+      const manifests = [];
+      for(var file of files){
+        const json = JSON.parse(fs.readFileSync(file,'utf8'));
+        const stats = fs.statSync(`${textPath}/${json.entry}`);
+        var fileSizeInBytes = stats.size;
+      // Convert the file size to megabytes (optional)
+      var fileSizeInMegabytes = fileSizeInBytes / (1024*1024);
+        manifests.push({...json, author: json?.author || 'Anonymous' , size: fileSizeInMegabytes, preview: `${textPath}/${json?.entry}`});
+      }
+      broadcast([win, monitor], 'view:text:updated', JSON.stringify(manifests));
     });
   });
 
@@ -135,6 +161,10 @@ async function createWindow() {
       });
     }
   });
+
+  ipcMain.on('save:text', (event) => {
+    broadcast([monitor], 'save:text', appState.inputField);
+  })
 
   /** OPEN ANOTHER WINDOW */
   ipcMain.on("monitor:open", async (event, arg) => {

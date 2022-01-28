@@ -6,6 +6,7 @@ const TopLeftLogo = ({state, setState}) => {
         top: 0,
         left: 0,
         width: '10vw',
+        pointerEvents: 'none'
     } as React.CSSProperties;
     return <img alt="event logo" src={EventLogo} style={style}/>
 };

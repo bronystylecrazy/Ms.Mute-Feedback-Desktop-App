@@ -9,6 +9,7 @@ declare global {
     app: import('electron').App,
     path: typeof import('path'),
     os: typeof import('os'),
+    shell: import('electron').Shell,
     removeLoading: () => void
   }
 }
