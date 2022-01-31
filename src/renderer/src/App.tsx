@@ -10,7 +10,8 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 const ipcRenderer = window.ipcRenderer;
 import deepeq from './utils/deepeq';
 import VideoBackground from './components/VideoBackground';
-import { Snackbar } from '@mui/material';
+import { NotificationContextProvider } from './context/notification';
+import TextMode from './pages/TextMode';
 
 
 const App = () => {
@@ -41,27 +42,23 @@ const App = () => {
     },[onSyncHandler]);
 
     return <ThemeContextProvider>
-        <HashRouter>
-            <VideoBackground state={appState} setState={setState} persistent/>
-            <Routes>
-                <Route path="/text" element={<Home state={appState} setState={setState}/>} />
-                <Route path="/image_collection" element={<Collection state={appState} setState={setState}/>} />
-                <Route path="/text_collection" element={<TextCollection state={appState} setState={setState}/>} />
-                <Route path="/drawmode" element={<DrawMode state={appState} setState={setState}/>} />
-                <Route path="/monitor" element={<Monitor state={appState} setState={setState}/>} />
-                <Route
-                    path="*"
-                    element={<Navigate to="/text" />}
-                />
-            </Routes>
-            {/* <Snackbar
-                open={open}
-                autoHideDuration={6000}
-                onClose={handleClose}
-                message="Note archived"
-                action={action}
-            /> */}
-        </HashRouter>
+            <NotificationContextProvider>
+                <HashRouter>
+                    <VideoBackground state={appState} setState={setState} persistent/>
+                    <Routes>
+                        <Route path="/" element={<Home state={appState} setState={setState}/>} />
+                        <Route path="/textmode" element={<TextMode state={appState} setState={setState}/>} />
+                        <Route path="/image_collection" element={<Collection state={appState} setState={setState}/>} />
+                        <Route path="/text_collection" element={<TextCollection state={appState} setState={setState}/>} />
+                        <Route path="/drawmode" element={<DrawMode state={appState} setState={setState}/>} />
+                        <Route path="/monitor" element={<Monitor state={appState} setState={setState}/>} />
+                        <Route
+                            path="*"
+                            element={<Navigate to="/" />}
+                        />
+                    </Routes>
+                </HashRouter>
+        </NotificationContextProvider>
     </ThemeContextProvider>
 };
 

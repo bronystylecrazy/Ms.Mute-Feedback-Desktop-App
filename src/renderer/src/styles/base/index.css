@@ -21,7 +21,8 @@ a {
 }
 
 ::selection {
-    background: #081c3500;
+    background: #000000;
+    color: white;
 }
 
 input {

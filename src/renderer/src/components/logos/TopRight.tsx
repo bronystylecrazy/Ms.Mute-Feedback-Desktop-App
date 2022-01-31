@@ -1,18 +1,20 @@
 import { Settings } from "@mui/icons-material";
 import { LoadingButton } from '@mui/lab';
-import { Box , IconButton } from "@mui/material";
+import { Box , Button, IconButton } from "@mui/material";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import CastIcon from '@mui/icons-material/Cast';
 
-const TopRight = ({ buttonTitle="Draw Mode", to="/drawmode" }) => {
+const TopRight = ({ showButton=true, buttonTitle="Draw Mode", to="/drawmode", icon=<></>}) => {
     const [isMonitLoading, setIsMonitLoading] = useState(false);
     const [monitor, setMonitor] = useState(null);
 
     const style = {
         position: 'fixed',
-        top: 0,
-        right: 0,
-        zIndex: 1000
+        top: '.5rem',
+        right: '.5rem',
+        zIndex: 1000,
+
     };
 
     useEffect(() => {
@@ -41,12 +43,12 @@ const TopRight = ({ buttonTitle="Draw Mode", to="/drawmode" }) => {
     };
 
     return <Box sx={style}>
-        <Link to={to}>
-          <LoadingButton variant="outlined" color="secondary">{buttonTitle}</LoadingButton>
-        </Link>
-        <IconButton aria-label="setting"  disabled={isMonitLoading} onClick={turnOnMonitor}>
-            <Settings sx={{ fontSize: '2.5rem'}}/>
-        </IconButton>
+        {showButton && <Link to={to}>
+          <LoadingButton variant="outlined" size="large" color="secondary" sx={{ marginRight: '.5rem'}}>{icon} {buttonTitle}</LoadingButton>
+        </Link>}
+        <LoadingButton variant="outlined" size="large" disabled={isMonitLoading} onClick={turnOnMonitor}>
+            <CastIcon sx={{ fontSize: '1.5rem', marginRight: '.5rem'}}/> เปิดหน้าจอ
+        </LoadingButton>
     </Box>;
 };
 

@@ -31,7 +31,7 @@ const Collection = ({state, setState}) => {
     const [images, setImages] = useState([])
     const [hover, setHover] = useState(-1)
     const [sortBy, setSortBy] = useState(1)
-    const [reverse, setReverse] = useState(false)
+    const [reverse, setReverse] = useState(true)
     
 
     const filteredItems = useMemo(() => { 

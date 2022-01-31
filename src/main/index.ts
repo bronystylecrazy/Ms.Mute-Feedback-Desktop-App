@@ -12,7 +12,7 @@ import fs from 'fs'
 import dataURLtoFile from './util/dataUrlToFile'
 
 const isWin7 = os.release().startsWith('6.1')
-const isDev = true;
+const isDev = false;
 
 const route = {
   'home': '/#/text',
@@ -29,7 +29,7 @@ let win: BrowserWindow | null = null
 
 async function createWindow() {
   let appState = {
-    inputField: "Fuck you float",
+    inputField: "",
     t: 360,
     color: '#fff'
   };
@@ -40,15 +40,12 @@ async function createWindow() {
       preload: join(__dirname, '../preload/index.cjs'),
       enableRemoteModule: true,
       nodeIntegration: true,
-      webSecurity: false
+      webSecurity: false,
     },
     ...windowConf
   })
   let monitor: BrowserWindow;
 
-  // win.loadURL( isDev ? 'http://localhost:3000' : `file://${path.join(__dirname, '../build/index.html')}` )
-  
-  
   /** SET STATE THROUGH ALL WINDOWS */
   ipcMain.on('setState', (event, arg) => {
     if(arg.data) appState = { ...appState, ...arg.data };
@@ -59,7 +56,7 @@ async function createWindow() {
   ipcMain.on('setState:broadcast', (event, arg) => {
     if(arg.data) appState = { ...appState, ...arg.data };
     appState[arg.field] = arg.value;
-    console.log(`set: ${arg.field} = ${arg.value}`);
+    console.log(`set: ${JSON.stringify(arg)}`);
     broadcast([win,monitor], 'sync', {...appState}, event.sender)
   });
 
@@ -108,6 +105,7 @@ async function createWindow() {
         const json = JSON.parse(fs.readFileSync(file,'utf8'));
         const stats = fs.statSync(`${textPath}/${json.entry}`);
         var fileSizeInBytes = stats.size;
+        // json.text = json.text.replaceAll('\n', '\\n');
       // Convert the file size to megabytes (optional)
       var fileSizeInMegabytes = fileSizeInBytes / (1024*1024);
         manifests.push({...json, author: json?.author || 'Anonymous' , size: fileSizeInMegabytes, preview: `${textPath}/${json?.entry}`});
@@ -152,7 +150,7 @@ async function createWindow() {
   ipcMain.on('save:image', (event, { dataURL, outPath}) => {
     try{
       var buffer = Buffer.from(dataURL.substring(`data:image/png;base64,`.length), 'base64');
-      fs.writeFileSync(outPath, buffer);
+      fs.writeFileSync(outPath.replaceAll('\n','|'), buffer);
       event.reply('save:image', true);
     }catch(e){
       event.reply('save:image', {
@@ -163,7 +161,18 @@ async function createWindow() {
   });
 
   ipcMain.on('save:text', (event) => {
-    broadcast([monitor], 'save:text', appState.inputField);
+    try{
+      event.reply('save:text', {
+        success: true,
+        message: 'Save successfully!'
+      })
+      broadcast([monitor], 'save:text', appState.inputField);
+    }catch(e){
+      event.reply('save:text', {
+        success: false,
+        message: 'Did not connect or open monitor'
+      })
+    }
   })
 
   /** OPEN ANOTHER WINDOW */
@@ -180,7 +189,12 @@ async function createWindow() {
         ...windowConf
       })
       if (app.isPackaged) {
-        monitor.loadFile(join(__dirname, `../renderer/index.html`))
+        monitor.loadFile(join(__dirname, `../renderer/index.html`)).then(() => {
+          monitor.webContents.send('as-monitor');
+        })
+        monitor.webContents.on('did-finish-load', () => {
+          monitor.webContents.send('as-monitor');
+        })
       }else{
         const pkg = await import('../../package.json')
         const url = `http://${pkg.env.HOST || '127.0.0.1'}:${pkg.env.PORT}${route.monitor}`
@@ -215,6 +229,12 @@ async function createWindow() {
   // Test active push message to Renderer-process.
   win.webContents.on('did-finish-load', () => {
     win?.webContents.send('main-process-message', (new Date).toLocaleString())
+  })
+
+  win.on('closed', () => {
+    if(monitor != null && !monitor.isDestroyed()){
+      monitor.close();
+    }
   })
 }
 

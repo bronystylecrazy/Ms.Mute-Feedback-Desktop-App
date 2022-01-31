@@ -4,10 +4,10 @@ import CollectionButton from "../components/buttons/CollectionButton";
 import VideoBackground from '../components/VideoBackground';
 import BottomRightLogo from "../components/logos/BottomRightLogo";
 import TopLeftLogo from "@/components/logos/TopLeftLogo";
-import { useEffect, useRef, useState } from "react";
-import domtoimage from 'dom-to-image';
+import { useContext, useEffect, useRef, useState } from "react";
 import { fabric } from 'fabric'
 import { FabricJSCanvas, useFabricJSEditor } from 'fabricjs-react'
+import { NotificationContext } from "@/context/notification";
 
 let Bar;
 
@@ -25,6 +25,8 @@ const Monitor = ({state, setState}) => {
     const { editor, onReady } = useFabricJSEditor()
     const [isText, setIsText] = useState(true)
     const myCanvas = useRef<HTMLCanvasElement>(null);
+    const { notify } = useContext(NotificationContext);
+
     const onAddCircle = () => {
         // editor?.addCircle()
       }
@@ -33,6 +35,10 @@ const Monitor = ({state, setState}) => {
         
       }
     useEffect(() => {
+        notify({
+            message: 'Connected',
+            duration: 3000
+        })
         const resizeHandler = () => {
             if(editor){
                 editor.canvas.setWidth(window.innerWidth);
@@ -51,13 +57,26 @@ const Monitor = ({state, setState}) => {
         if(editor){
             if(!Bar) Bar = new fabric.Text(state.inputField, {fontFamily: 'IBM Plex Sans',fontSize: 80,fill: state.color,id: 'mainMonitor',selectable: true, top: 50, left: 10});
             else {
-                Bar.set('text',state.inputField);
                 Bar.set('fill',state.color);
+                Bar.set('text',state.inputField);
             }
+            var shadow = new fabric.Shadow({
+                color: 'black',
+                blur: 5
+            });
+            Bar.set('textAlign', 'center')
+            Bar.set('shadow', shadow)
+            Bar.set('fontFamily', 'IBM Plex Sans')
             editor.canvas.clear();
             editor.canvas.add(Bar)
             Bar.center();
             // selectObject(editor.canvas, 'mainMonitor')
+        }
+
+        
+
+        return () => {
+            
         }
     };
 
@@ -66,7 +85,8 @@ const Monitor = ({state, setState}) => {
     const saveBoundary = () => {
         const storageDir = window.path.join(app.getPath('userData'),`./texts`);
         if(!window.fs.existsSync(storageDir)) window.fs.mkdirSync(storageDir)
-        const fileName = state.inputField.trim().replaceAll(' ','_');
+        const fileName = state.inputField.trim().replaceAll(' ','_').replaceAll('\n','_').replaceAll('\\n','_').replaceAll('\\','_');
+        console.log(fileName)
         const outDir = window.path.join(storageDir,`./`);
         if(!window.fs.existsSync(outDir)) window.fs.mkdirSync(outDir)
         console.log('cutting...')
@@ -117,11 +137,12 @@ const Monitor = ({state, setState}) => {
         if(editor){
             window.ipcRenderer.on('save:text', (event, args) => {
                 saveBoundary()
-            });
+            }).setMaxListeners(1);
     
             window.ipcRenderer.on('save:image', (event, args) => {
                 console.log('saved!', args)
-            })
+                
+            }).setMaxListeners(1)
             // editor.canvas.isDrawingMode = true;
             // editor.canvas.freeDrawingBrush.width = 5;
             // editor.canvas.freeDrawingBrush.color = '#00aeff';
@@ -197,10 +218,6 @@ const Monitor = ({state, setState}) => {
         <Box sx={{position: 'fixed', width: '100vw', borderRadius: '2.5rem', top: '0', left: '0', bottom: '0',right: '0',}}>
             <FabricJSCanvas onReady={onReady} className="projector"/>
         </Box>
-        {/* <Typography 
-        id="monitor-text"
-        component="h3"
-        sx={{wordBreak: 'break-word', position: 'fixed',textAlign:'center', width: '40vw',fontSize: '5vw', color: 'white', top: '50%', left: '50%', transform: 'translate(-50%,-50%)'}}>{state.inputField}</Typography> */}
         <BottomRightLogo/>
     </Box>
 };

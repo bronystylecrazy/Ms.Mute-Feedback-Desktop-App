@@ -1,5 +1,5 @@
 {
-  "appId": "YouAppID@qq.com",
+  "appId": "com.electron.sirawit.feedback-app",
   "asar": true,
   "directories": {
     "output": "release/${version}"

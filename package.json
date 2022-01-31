@@ -1,8 +1,8 @@
 {
-  "name": "vite-react-electron",
-  "version": "1.0.0",
-  "description": "Vite React Electron boilerplate.",
-  "author": "草鞋没号 <308487730@qq.com>",
+  "name": "feedback-app",
+  "version": "1.3.0",
+  "description": "Feedback App for an exhibition",
+  "author": "Sirawit Pratoomsuwan",
   "license": "MIT",
   "main": "dist/main/index.cjs",
   "asar": false,

@@ -107,7 +107,7 @@ const TextCollection = ({state, setState}) => {
             filteredItems.length > 0 ? 
                 (<Grid container spacing={5} md={12} sx={{width: '100%',flexGrow: 1}}>
                     {filteredItems.map((image,index) => <Grid key={image.id} item xs={12} sm={6} md={4}>
-                        <Link to={`/drawmode?project=${image.name}&prev=image_collection`}>
+                        <Link to={`/textmode?text=${image.text.replaceAll('\n','<br>')}&prev=text_collection&color=${image.color}`}>
                             <Box onMouseEnter={() => setHover(index)} onMouseLeave={() => setHover(-1)} sx={{boxShadow: 10,transition: 'all 0.3s ease-in-out',overflow:'hidden',border: `2px solid ${hover === index ? 'white' : 'rgba(0,0,0,.1)'}`,width: '100%', position: 'relative', paddingTop: '56.25%', background: alpha("#000000",.2), borderRadius: '1rem'}}>
                                 <img style={{ opacity: hover === index ? 1 : .6,...(image.meta.ratio > 1 ? {width: '100%'} : {height: '100%'}),transition: 'all 0.3s ease-in-out', transform: `scale(${hover === index ? 1.1 : 1}) translate(-50%, -50%)`,top: '50%', position: 'absolute', left: '50%'}}src={`file:///${image.preview}`}></img>
                                 <Box sx={{

@@ -9,10 +9,11 @@ const CollectionButton = ({children,...props}) => {
         borderRadius: '1vw',
         fontSize: '2.5vw',
         fontFamily: "'IBM Plex Sans', Arial, Helvetica, sans-serif",
-        backdropFilter: `blur(16px) saturate(180%)`
+        backdropFilter: `blur(16px) saturate(180%)`,
+        boxShadow: 15
     };
 
-    return <Button variant="outlined" color="secondary" {...props} sx={style}>{children}</Button>
+    return <Button variant="outlined" color="secondary" sx={style} {...props} >{children}</Button>
 };
 
 export default CollectionButton;
